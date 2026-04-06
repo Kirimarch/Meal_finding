@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../providers/search_filter_provider.dart';
 import '../providers/search_provider.dart';
 import '../services/history_service.dart';
+import '../services/favorites_service.dart';
 import '../widgets/category_filter_bar.dart';
 import '../widgets/filter_panel.dart';
 import '../widgets/result_card.dart';
@@ -133,6 +134,113 @@ class HomePage extends ConsumerWidget {
     );
   }
 
+  Future<void> _showFavorites(BuildContext context, WidgetRef ref) async {
+    final initialFavorites = await FavoriteService.getFavorites();
+    if (!context.mounted) return;
+
+    var favorites = initialFavorites;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1A1A1A),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setSheetState) {
+          return Container(
+            height: MediaQuery.of(context).size.height * 0.7,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
+            child: Column(
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                      color: Colors.white24,
+                      borderRadius: BorderRadius.circular(2)),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  'ร้านโปรดของคุณ ❤️',
+                  style: GoogleFonts.outfit(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white),
+                ),
+                const SizedBox(height: 5),
+                const Text(
+                  'ร้านที่คุณบันทึกไว้จะแสดงที่นี่',
+                  style: TextStyle(color: Colors.white38, fontSize: 13),
+                ),
+                const Divider(height: 30, color: Colors.white12),
+                Expanded(
+                  child: favorites.isEmpty
+                      ? Center(
+                          child: Text('ยังไม่มีร้านโปรดเลย',
+                              style: GoogleFonts.outfit(color: Colors.white24)))
+                      : ListView.builder(
+                          itemCount: favorites.length,
+                          itemBuilder: (context, index) {
+                            final restaurant = favorites[index];
+                            return Dismissible(
+                              key: ValueKey('fav_${restaurant.id}'),
+                              direction: DismissDirection.endToStart,
+                              background: Container(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                alignment: Alignment.centerRight,
+                                padding: const EdgeInsets.only(right: 20),
+                                decoration: BoxDecoration(
+                                  color: Colors.red.withOpacity(0.7),
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                child: const Icon(Icons.favorite_border,
+                                    color: Colors.white),
+                              ),
+                              onDismissed: (_) {
+                                setSheetState(() {
+                                  favorites = List.from(favorites)..removeAt(index);
+                                });
+                                FavoriteService.removeFromFavorites(restaurant.id);
+                              },
+                              child: Container(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.05),
+                                    borderRadius: BorderRadius.circular(15)),
+                                child: ListTile(
+                                  leading: const CircleAvatar(
+                                      backgroundColor: Colors.white10,
+                                      child: Icon(Icons.favorite,
+                                          color: Colors.pinkAccent, size: 20)),
+                                  title: Text(restaurant.name,
+                                      style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w600)),
+                                  subtitle: Text(restaurant.address,
+                                      style: const TextStyle(
+                                          color: Colors.white38, fontSize: 12),
+                                      maxLines: 1),
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    ref
+                                        .read(searchProvider.notifier)
+                                        .selectRestaurant(restaurant);
+                                  },
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final searchState = ref.watch(searchProvider);
@@ -150,6 +258,10 @@ class HomePage extends ConsumerWidget {
               color: Colors.white),
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.favorite_rounded, color: Colors.pinkAccent),
+            onPressed: () => _showFavorites(context, ref),
+          ),
           Padding(
             padding: const EdgeInsets.only(right: 12),
             child: IconButton(

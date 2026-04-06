@@ -28,24 +28,31 @@ class PlacesService {
     try {
       final String endpoint;
       final Map<String, dynamic> requestBody;
-      final String fieldMask = 'places.displayName,places.rating,places.formattedAddress,places.googleMapsUri,places.photos,places.editorialSummary,places.priceLevel,places.name,places.currentOpeningHours';
-      final category = (categories?.isNotEmpty == true) ? categories!.first : 'restaurant';
+      const String fieldMask =
+          'places.displayName,places.rating,places.formattedAddress,places.googleMapsUri,places.photos,places.editorialSummary,places.priceLevel,places.name,places.currentOpeningHours';
+      final category = (categories?.isNotEmpty == true)
+          ? categories!.first
+          : 'restaurant';
 
       if (province != null && province.isNotEmpty) {
         endpoint = 'https://places.googleapis.com/v1/places:searchText';
-        
+
         String queryType = 'ร้านอาหาร';
-        if (category == 'cafe') queryType = 'คาเฟ่ หรือ ของหวาน';
-        if (category == 'fast_food_restaurant') queryType = 'ฟาสต์ฟู้ด';
-        if (category == 'japanese_restaurant') queryType = 'อาหารญี่ปุ่น';
-        if (category == 'thai_restaurant') queryType = 'อาหารไทย';
-        if (category == 'korean_restaurant') queryType = 'อาหารเกาหลี';
-        if (category == 'chinese_restaurant') queryType = 'อาหารจีน';
-        if (category == 'italian_restaurant') queryType = 'อาหารอิตาเลียน';
-        if (category == 'seafood_restaurant') queryType = 'อาหารทะเล';
-        if (category == 'steak_house') queryType = 'สเต็ก';
-        if (category == 'pizza_restaurant') queryType = 'พิซซ่า';
-        if (category == 'vegetarian_restaurant') queryType = 'อาหารมังสวิรัติ';
+        if (category == 'cafe') queryType = 'ร้านคาเฟ่ หรือ ของหวาน';
+        if (category == 'fast_food_restaurant') {
+          queryType =
+              'McDonald\'s KFC Pizza Hut The Pizza Company Burger King Subway Texas Chicken Taco Bell Dairy Queen A&W';
+        }
+        if (category == 'japanese_restaurant') queryType = 'ร้านอาหารญี่ปุ่น';
+        if (category == 'thai_restaurant') queryType = 'ร้านอาหารไทย';
+        if (category == 'korean_restaurant') queryType = 'ร้านอาหารเกาหลี';
+        if (category == 'chinese_restaurant') queryType = 'ร้านอาหารจีน';
+        if (category == 'italian_restaurant') queryType = 'ร้านอาหารอิตาเลียน';
+        if (category == 'seafood_restaurant') queryType = 'ร้านอาหารทะเล';
+        if (category == 'steak_house') queryType = 'ร้านสเต็ก';
+        if (category == 'pizza_restaurant') queryType = 'ร้านพิซซ่า';
+        if (category == 'vegetarian_restaurant')
+          queryType = 'ร้านอาหารมังสวิรัติ';
 
         String query = queryType;
         if (subDistrict != null && subDistrict.isNotEmpty) {
@@ -64,16 +71,14 @@ class PlacesService {
 
         requestBody = {
           "textQuery": query,
+          if (category != 'fast_food_restaurant') "includedType": category,
           "pageSize": 20,
           if (searchLat != null && searchLng != null)
             "locationBias": {
               "circle": {
-                "center": {
-                  "latitude": searchLat,
-                  "longitude": searchLng,
-                },
+                "center": {"latitude": searchLat, "longitude": searchLng},
                 "radius": searchBiasRadius,
-              }
+              },
             },
         };
       } else {
@@ -90,9 +95,9 @@ class PlacesService {
                 "latitude": position.latitude,
                 "longitude": position.longitude,
               },
-              "radius": radius
-            }
-          }
+              "radius": radius,
+            },
+          },
         };
       }
 
@@ -123,7 +128,8 @@ class PlacesService {
           if (minRating > 0 && (p['rating'] ?? 0.0) < minRating) return false;
           if (openNow &&
               (p['currentOpeningHours'] == null ||
-                  p['currentOpeningHours']['openNow'] != true)) return false;
+                  p['currentOpeningHours']['openNow'] != true))
+            return false;
           return true;
         }).toList();
 
@@ -132,10 +138,10 @@ class PlacesService {
         final random = Random();
         final selectedJson = freshPlaces[random.nextInt(freshPlaces.length)];
         final selected = Restaurant.fromApiJson(selectedJson);
-        
+
         // บันทึกลงประวัติ
         await HistoryService.saveToHistory(selected);
-        
+
         return selected;
       } else {
         throw 'Error ${response.statusCode}: ${response.body}';

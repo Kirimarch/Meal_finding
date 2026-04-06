@@ -2,12 +2,63 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/restaurant.dart';
 import '../services/places_service.dart';
+import '../services/favorites_service.dart';
 
-class ResultCard extends StatelessWidget {
+class ResultCard extends StatefulWidget {
   final Restaurant restaurant;
   final VoidCallback? onReshuffle;
 
   const ResultCard({super.key, required this.restaurant, this.onReshuffle});
+
+  @override
+  State<ResultCard> createState() => _ResultCardState();
+}
+
+class _ResultCardState extends State<ResultCard> {
+  bool _isFavorite = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkFavorite();
+  }
+
+  @override
+  void didUpdateWidget(ResultCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.restaurant.id != widget.restaurant.id) {
+      _checkFavorite();
+    }
+  }
+
+  Future<void> _checkFavorite() async {
+    final isFav = await FavoriteService.isFavorite(widget.restaurant.id);
+    if (mounted) {
+      setState(() {
+        _isFavorite = isFav;
+      });
+    }
+  }
+
+  Future<void> _toggleFavorite() async {
+    await FavoriteService.toggleFavorite(widget.restaurant);
+    setState(() {
+      _isFavorite = !_isFavorite;
+    });
+    
+    if (mounted) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_isFavorite ? 'เพิ่มลงในรายการโปรดแล้ว! ❤️' : 'เอาออกจากรายการโปรดแล้ว'),
+          duration: const Duration(seconds: 1),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: _isFavorite ? Colors.pinkAccent : Colors.grey[800],
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      );
+    }
+  }
 
   Future<void> _openInMaps(String uri) async {
     final url = Uri.parse(uri);
@@ -18,6 +69,9 @@ class ResultCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final restaurant = widget.restaurant;
+    final onReshuffle = widget.onReshuffle;
+    
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -73,6 +127,26 @@ class ResultCard extends StatelessWidget {
                       Colors.transparent,
                       Colors.black.withOpacity(0.7),
                     ],
+                  ),
+                ),
+              ),
+              // ปุ่มกด Favorite
+              Positioned(
+                top: 15,
+                left: 15,
+                child: GestureDetector(
+                  onTap: _toggleFavorite,
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.4),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      _isFavorite ? Icons.favorite : Icons.favorite_border,
+                      color: _isFavorite ? Colors.pinkAccent : Colors.white,
+                      size: 24,
+                    ),
                   ),
                 ),
               ),
