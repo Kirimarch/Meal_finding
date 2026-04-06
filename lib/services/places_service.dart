@@ -21,6 +21,9 @@ class PlacesService {
     String? province,
     String? district,
     String? subDistrict,
+    double? searchLat,
+    double? searchLng,
+    double searchBiasRadius = 8000.0,
   }) async {
     try {
       final String endpoint;
@@ -62,6 +65,16 @@ class PlacesService {
         requestBody = {
           "textQuery": query,
           "pageSize": 20,
+          if (searchLat != null && searchLng != null)
+            "locationBias": {
+              "circle": {
+                "center": {
+                  "latitude": searchLat,
+                  "longitude": searchLng,
+                },
+                "radius": searchBiasRadius,
+              }
+            },
         };
       } else {
         Position position = await Geolocator.getCurrentPosition(
@@ -100,22 +113,24 @@ class PlacesService {
         if (allPlaces.isEmpty) return null;
 
         // --- ระบบป้องกันร้านซ้ำใน 20 โรลล่าสุด ---
-        final history = await HistoryService.getHistory();
-        final recentIds = history.map((e) => e.id).toSet();
+        final historyList = await HistoryService.getHistory();
+        final recentIds = historyList.map((e) => e.id).toSet();
 
         // กรองเอาเฉพาะร้านที่ยังไม่มีในประวัติ และตรงตามเงื่อนไขดาว/เวลาเปิด
         List freshPlaces = allPlaces.where((p) {
-          if (recentIds.contains(p['name'])) return false;
+          final String placeId = p['name'] ?? '';
+          if (recentIds.contains(placeId)) return false;
           if (minRating > 0 && (p['rating'] ?? 0.0) < minRating) return false;
-          if (openNow && (p['currentOpeningHours'] == null || p['currentOpeningHours']['openNow'] != true)) return false;
+          if (openNow &&
+              (p['currentOpeningHours'] == null ||
+                  p['currentOpeningHours']['openNow'] != true)) return false;
           return true;
         }).toList();
 
-        // ถ้าทุกคนในลิสต์ 20 ร้านนี้เคยไปหมดแล้ว (หายากมาก) ให้ใช้ลิสต์เดิมทั้งหมดเพื่อป้องกันแอปค้าง
-        List finalPool = freshPlaces.isEmpty ? allPlaces : freshPlaces;
+        if (freshPlaces.isEmpty) return null;
 
         final random = Random();
-        final selectedJson = finalPool[random.nextInt(finalPool.length)];
+        final selectedJson = freshPlaces[random.nextInt(freshPlaces.length)];
         final selected = Restaurant.fromApiJson(selectedJson);
         
         // บันทึกลงประวัติ

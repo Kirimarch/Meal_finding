@@ -69,6 +69,54 @@ void main() async {
     
     await file.writeAsString(buffer.toString());
     print('Done! Saved to lib/thai_districts.dart');
+
+    // Build province coords
+    final coordBuffer = StringBuffer();
+    coordBuffer.writeln('// Auto-generated Thai coordinates');
+    coordBuffer.writeln('const Map<String, List<double>> provinceCoords = {');
+    for (var p in pData) {
+      final name = p['name_th']?.toString().trim() ?? '';
+      final latStr = p['latitude']?.toString().trim() ?? '';
+      final lngStr = p['longitude']?.toString().trim() ?? '';
+      if (name.isEmpty || latStr.isEmpty || lngStr.isEmpty) continue;
+      final lat = double.tryParse(latStr);
+      final lng = double.tryParse(lngStr);
+      if (lat == null || lng == null) continue;
+      coordBuffer.writeln("  '$name': [$lat, $lng],");
+    }
+    coordBuffer.writeln('};');
+    coordBuffer.writeln('');
+
+    // Build district coords grouped by province
+    final Map<String, List<Map<String, dynamic>>> distByProv = {};
+    for (var d in dData) {
+      final latStr = d['latitude']?.toString().trim() ?? '';
+      final lngStr = d['longitude']?.toString().trim() ?? '';
+      if (latStr.isEmpty || lngStr.isEmpty) continue;
+      final lat = double.tryParse(latStr);
+      final lng = double.tryParse(lngStr);
+      if (lat == null || lng == null) continue;
+      final distName = d['name_th']?.toString().trim() ?? '';
+      final provId = d['province_id'];
+      final provName = provMap[provId] ?? '';
+      if (distName.isEmpty || provName.isEmpty) continue;
+      distByProv.putIfAbsent(provName, () => []);
+      distByProv[provName]!.add({'name': distName, 'lat': lat, 'lng': lng});
+    }
+
+    coordBuffer.writeln('const Map<String, Map<String, List<double>>> districtCoords = {');
+    for (var pName in distByProv.keys) {
+      coordBuffer.writeln("  '$pName': {");
+      for (var d in distByProv[pName]!) {
+        coordBuffer.writeln("    '${d['name']}': [${d['lat']}, ${d['lng']}],");
+      }
+      coordBuffer.writeln("  },");
+    }
+    coordBuffer.writeln('};');
+
+    final coordFile = File('lib/thai_coords.dart');
+    await coordFile.writeAsString(coordBuffer.toString());
+    print('Done! Saved to lib/thai_coords.dart');
   } catch (e, stack) {
     print('Error: $e');
     print(stack);

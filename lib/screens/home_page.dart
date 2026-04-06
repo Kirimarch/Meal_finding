@@ -37,19 +37,35 @@ class HomePage extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(2)),
                 ),
                 const SizedBox(height: 20),
-                Text(
-                  'ประวัติการสุ่ม (20 ร้านล่าสุด)',
-                  style: GoogleFonts.outfit(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'ประวัติการสุ่มล่าสุด',
+                      style: GoogleFonts.outfit(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white),
+                    ),
+                    if (history.isNotEmpty)
+                      TextButton(
+                        onPressed: () async {
+                          await HistoryService.clearHistory();
+                          setSheetState(() {
+                            history = [];
+                          });
+                        },
+                        child: const Text('ลบทั้งหมด',
+                            style: TextStyle(color: Colors.redAccent)),
+                      ),
+                  ],
                 ),
                 const SizedBox(height: 5),
                 const Text(
-                  'ปัดซ้ายเพื่อลบออกจากประวัติ',
+                  'ปัดซ้ายเพื่อลบรายชื่อ | สุ่มไม่ซ้ำ 20 รายการ',
                   style: TextStyle(color: Colors.white38, fontSize: 13),
                 ),
-                const Divider(height: 40, color: Colors.white12),
+                const Divider(height: 30, color: Colors.white12),
                 Expanded(
                   child: history.isEmpty
                       ? Center(

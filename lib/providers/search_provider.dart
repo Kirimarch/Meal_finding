@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/restaurant.dart';
 import '../services/places_service.dart';
+import '../thai_coords.dart';
 import 'search_filter_provider.dart';
 
 class SearchState {
@@ -40,6 +41,30 @@ class SearchNotifier extends Notifier<SearchState> {
     );
 
     try {
+      // Look up coordinates for locationBias
+      double? biasLat;
+      double? biasLng;
+      double biasRadius = 8000.0;
+
+      if (filters.useCustomLocation && filters.province.isNotEmpty) {
+        if (filters.district.isNotEmpty) {
+          final coords = districtCoords[filters.province]?[filters.district];
+          if (coords != null) {
+            biasLat = coords[0];
+            biasLng = coords[1];
+            biasRadius = filters.subDistrict.isNotEmpty ? 3000.0 : 8000.0;
+          }
+        }
+        if (biasLat == null) {
+          final coords = provinceCoords[filters.province];
+          if (coords != null) {
+            biasLat = coords[0];
+            biasLng = coords[1];
+            biasRadius = 30000.0;
+          }
+        }
+      }
+
       final restaurant = await PlacesService.getRandomNearbyRestaurant(
         radius: filters.radius,
         categories: [filters.category],
@@ -48,6 +73,9 @@ class SearchNotifier extends Notifier<SearchState> {
         province: filters.useCustomLocation ? filters.province : null,
         district: filters.useCustomLocation ? filters.district : null,
         subDistrict: filters.useCustomLocation ? filters.subDistrict : null,
+        searchLat: biasLat,
+        searchLng: biasLng,
+        searchBiasRadius: biasRadius,
       );
 
       await Future.delayed(const Duration(milliseconds: 1500));
