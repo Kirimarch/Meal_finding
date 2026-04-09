@@ -275,8 +275,10 @@ class FilterPanel extends ConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('ตั้งค่าสถานที่เอง (จังหวัด/อำเภอ/ตำบล)',
-                      style: GoogleFonts.outfit(color: Colors.white70)),
+                  Expanded(
+                    child: Text('ตั้งค่าสถานที่เอง (จังหวัด/อำเภอ/ตำบล)',
+                        style: GoogleFonts.outfit(color: Colors.white70)),
+                  ),
                   Switch(
                     value: filter.useCustomLocation,
                     activeColor: const Color(0xFFEB1555),
