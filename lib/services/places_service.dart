@@ -29,7 +29,7 @@ class PlacesService {
       final String endpoint;
       final Map<String, dynamic> requestBody;
       const String fieldMask =
-          'places.displayName,places.rating,places.formattedAddress,places.googleMapsUri,places.photos,places.editorialSummary,places.priceLevel,places.name,places.currentOpeningHours';
+          'places.displayName,places.rating,places.formattedAddress,places.googleMapsUri,places.photos,places.editorialSummary,places.priceLevel,places.name,places.currentOpeningHours,places.location';
       final category = (categories?.isNotEmpty == true)
           ? categories!.first
           : 'restaurant';
@@ -82,6 +82,23 @@ class PlacesService {
             },
         };
       } else {
+        bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+        if (!serviceEnabled) {
+          throw 'กรุณาเปิด GPS ในมือถือของคุณ';
+        }
+
+        LocationPermission permission = await Geolocator.checkPermission();
+        if (permission == LocationPermission.denied) {
+          permission = await Geolocator.requestPermission();
+          if (permission == LocationPermission.denied) {
+            throw 'กรุณาอนุญาตสิทธิ์การเข้าถึงตำแหน่ง';
+          }
+        }
+
+        if (permission == LocationPermission.deniedForever) {
+          throw 'สิทธิ์การเข้าถึงตำแหน่งถูกปฏิเสธถาวร กรุณาไปตั้งค่าในมือถือ';
+        }
+
         Position position = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.high,
         );
@@ -107,6 +124,8 @@ class PlacesService {
           'Content-Type': 'application/json',
           'X-Goog-Api-Key': _apiKey,
           'X-Goog-FieldMask': fieldMask,
+          'X-Android-Package': 'com.example.lunch_quest',
+          'X-Android-Cert': 'F6:97:0A:69:BC:0F:19:CA:47:E5:33:FB:63:68:00:D0:35:87:C1:60',
         },
         body: jsonEncode(requestBody),
       );

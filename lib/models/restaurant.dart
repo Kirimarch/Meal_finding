@@ -9,6 +9,8 @@ class Restaurant {
   final String? photoReference;
   final String? summary;
   final String? priceLevel;
+  final double? lat;
+  final double? lng;
 
   Restaurant({
     required this.id,
@@ -19,6 +21,8 @@ class Restaurant {
     this.photoReference,
     this.summary,
     this.priceLevel,
+    this.lat,
+    this.lng,
   });
 
   Map<String, dynamic> toMap() {
@@ -31,6 +35,8 @@ class Restaurant {
       'photoReference': photoReference,
       'summary': summary,
       'priceLevel': priceLevel,
+      'lat': lat,
+      'lng': lng,
     };
   }
 
@@ -44,6 +50,8 @@ class Restaurant {
       photoReference: map['photoReference'],
       summary: map['summary'],
       priceLevel: map['priceLevel'],
+      lat: (map['lat'] as num?)?.toDouble(),
+      lng: (map['lng'] as num?)?.toDouble(),
     );
   }
 
@@ -63,6 +71,8 @@ class Restaurant {
       photoReference: photoName,
       summary: json['editorialSummary']?['text'],
       priceLevel: _parsePriceLevel(json['priceLevel']),
+      lat: (json['location']?['latitude'] as num?)?.toDouble(),
+      lng: (json['location']?['longitude'] as num?)?.toDouble(),
     );
   }
 

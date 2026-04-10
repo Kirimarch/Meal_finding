@@ -4,11 +4,19 @@ import '../models/restaurant.dart';
 import '../services/places_service.dart';
 import '../services/favorites_service.dart';
 
+import 'package:geolocator/geolocator.dart';
+
 class ResultCard extends StatefulWidget {
   final Restaurant restaurant;
   final VoidCallback? onReshuffle;
+  final Position? userPosition;
 
-  const ResultCard({super.key, required this.restaurant, this.onReshuffle});
+  const ResultCard({
+    super.key,
+    required this.restaurant,
+    this.onReshuffle,
+    this.userPosition,
+  });
 
   @override
   State<ResultCard> createState() => _ResultCardState();
@@ -67,10 +75,28 @@ class _ResultCardState extends State<ResultCard> {
     }
   }
 
+  String get _distanceStr {
+    if (widget.userPosition == null || widget.restaurant.lat == null || widget.restaurant.lng == null) {
+      return '';
+    }
+    final distanceInMeters = Geolocator.distanceBetween(
+      widget.userPosition!.latitude,
+      widget.userPosition!.longitude,
+      widget.restaurant.lat!,
+      widget.restaurant.lng!,
+    );
+    if (distanceInMeters < 1000) {
+      return '${distanceInMeters.toStringAsFixed(0)} ม.';
+    } else {
+      return '${(distanceInMeters / 1000).toStringAsFixed(1)} กม.';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final restaurant = widget.restaurant;
     final onReshuffle = widget.onReshuffle;
+    final dist = _distanceStr;
     
     return Container(
       width: double.infinity,
@@ -191,22 +217,40 @@ class _ResultCardState extends State<ResultCard> {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.green.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.star, color: Colors.green, size: 16),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${restaurant.rating}',
-                            style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.green.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.star, color: Colors.green, size: 16),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${restaurant.rating}',
+                                style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (dist.isNotEmpty) ...[
+                          const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              Icon(Icons.location_on, color: Colors.white.withOpacity(0.5), size: 14),
+                              const SizedBox(width: 2),
+                              Text(
+                                dist,
+                                style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 13, fontWeight: FontWeight.w500),
+                              ),
+                            ],
                           ),
                         ],
-                      ),
+                      ],
                     ),
                   ],
                 ),

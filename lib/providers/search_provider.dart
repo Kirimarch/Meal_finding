@@ -4,15 +4,19 @@ import '../services/places_service.dart';
 import '../thai_coords.dart';
 import 'search_filter_provider.dart';
 
+import 'package:geolocator/geolocator.dart';
+
 class SearchState {
   final bool isScanning;
   final Restaurant? restaurant;
   final String message;
+  final Position? userPosition;
 
   const SearchState({
     this.isScanning = false,
     this.restaurant,
     this.message = 'พร้อมสุ่มเมนูเด็ดแล้ว!',
+    this.userPosition,
   });
 
   SearchState copyWith({
@@ -20,11 +24,13 @@ class SearchState {
     Restaurant? restaurant,
     bool clearRestaurant = false,
     String? message,
+    Position? userPosition,
   }) {
     return SearchState(
       isScanning: isScanning ?? this.isScanning,
       restaurant: clearRestaurant ? null : (restaurant ?? this.restaurant),
       message: message ?? this.message,
+      userPosition: userPosition ?? this.userPosition,
     );
   }
 }
@@ -45,6 +51,7 @@ class SearchNotifier extends Notifier<SearchState> {
       double? biasLat;
       double? biasLng;
       double biasRadius = 8000.0;
+      Position? currentPos;
 
       if (filters.useCustomLocation && filters.province.isNotEmpty) {
         if (filters.district.isNotEmpty) {
@@ -63,6 +70,27 @@ class SearchNotifier extends Notifier<SearchState> {
             biasRadius = 30000.0;
           }
         }
+        
+        // If we found bias coordinates, create a dummy Position object for distance calc
+        if (biasLat != null && biasLng != null) {
+          currentPos = Position(
+            latitude: biasLat,
+            longitude: biasLng,
+            timestamp: DateTime.now(),
+            accuracy: 0,
+            altitude: 0,
+            heading: 0,
+            speed: 0,
+            speedAccuracy: 0,
+            altitudeAccuracy: 0,
+            headingAccuracy: 0,
+          );
+        }
+      } else {
+        // Not using custom location, get actual GPS
+        currentPos = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
+        );
       }
 
       final restaurant = await PlacesService.getRandomNearbyRestaurant(
@@ -83,14 +111,15 @@ class SearchNotifier extends Notifier<SearchState> {
       state = SearchState(
         isScanning: false,
         restaurant: restaurant,
+        userPosition: currentPos,
         message: restaurant == null
             ? 'ไม่พบร้านใหม่ๆ เลย ลองเพิ่มระยะดูไหม?'
             : state.message,
       );
-    } catch (_) {
-      state = const SearchState(
+    } catch (e) {
+      state = SearchState(
         isScanning: false,
-        message: 'เกิดข้อผิดพลาดในการโหลดข้อมูล',
+        message: 'เกิดข้อผิดพลาด: $e',
       );
     }
   }
