@@ -68,10 +68,36 @@ class _ResultCardState extends State<ResultCard> {
     }
   }
 
-  Future<void> _openInMaps(String uri) async {
-    final url = Uri.parse(uri);
+  Future<void> _launchNavigation() async {
+    final restaurant = widget.restaurant;
+    
+    // ถ้ามีพิกัด ให้ลองใช้ Directions API เพื่อนำทางทันที
+    if (restaurant.lat != null && restaurant.lng != null) {
+      final lat = restaurant.lat;
+      final lng = restaurant.lng;
+      
+      // ลองใช้ Google Navigation Intent (สำหรับ Android)
+      final googleMapsIntentUri = Uri.parse('google.navigation:q=$lat,$lng');
+      // แผนสำรอง: ใช้ Google Maps Directions URL
+      final googleMapsWebUri = Uri.parse('https://www.google.com/maps/dir/?api=1&destination=$lat,$lng');
+
+      try {
+        if (await canLaunchUrl(googleMapsIntentUri)) {
+          await launchUrl(googleMapsIntentUri);
+          return;
+        } else if (await canLaunchUrl(googleMapsWebUri)) {
+          await launchUrl(googleMapsWebUri, mode: LaunchMode.externalApplication);
+          return;
+        }
+      } catch (e) {
+        debugPrint('Error launching navigation: $e');
+      }
+    }
+
+    // แผนสำรองสุดท้าย: ใช้ลิงก์เดิมที่ได้จาก API
+    final url = Uri.parse(restaurant.googleMapsUri);
     if (await canLaunchUrl(url)) {
-      await launchUrl(url);
+      await launchUrl(url, mode: LaunchMode.externalApplication);
     }
   }
 
@@ -284,7 +310,7 @@ class _ResultCardState extends State<ResultCard> {
                   width: double.infinity,
                   height: 54,
                   child: ElevatedButton.icon(
-                    onPressed: () => _openInMaps(restaurant.googleMapsUri),
+                    onPressed: _launchNavigation,
                     icon: const Icon(Icons.near_me),
                     label: const Text('นำทางไปชิมเลย!', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     style: ElevatedButton.styleFrom(
