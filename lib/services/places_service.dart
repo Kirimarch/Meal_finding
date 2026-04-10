@@ -14,7 +14,7 @@ class PlacesService {
   }
 
   static Future<Restaurant?> getRandomNearbyRestaurant({
-    double radius = 1500.0,
+    double radius = 1000.0,
     List<String>? categories,
     double minRating = 0.0,
     bool openNow = false,

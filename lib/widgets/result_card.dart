@@ -8,13 +8,11 @@ import 'package:geolocator/geolocator.dart';
 
 class ResultCard extends StatefulWidget {
   final Restaurant restaurant;
-  final VoidCallback? onReshuffle;
   final Position? userPosition;
 
   const ResultCard({
     super.key,
     required this.restaurant,
-    this.onReshuffle,
     this.userPosition,
   });
 
@@ -65,6 +63,13 @@ class _ResultCardState extends State<ResultCard> {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
       );
+    }
+  }
+
+  Future<void> _viewOnMap() async {
+    final url = Uri.parse(widget.restaurant.googleMapsUri);
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
     }
   }
 
@@ -121,7 +126,6 @@ class _ResultCardState extends State<ResultCard> {
   @override
   Widget build(BuildContext context) {
     final restaurant = widget.restaurant;
-    final onReshuffle = widget.onReshuffle;
     final dist = _distanceStr;
     
     return Container(
@@ -321,23 +325,21 @@ class _ResultCardState extends State<ResultCard> {
                     ),
                   ),
                 ),
-                if (onReshuffle != null) ...[
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 54,
-                    child: OutlinedButton.icon(
-                      onPressed: onReshuffle,
-                      icon: const Icon(Icons.shuffle_rounded),
-                      label: const Text('สุ่มใหม่อีกครั้ง', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.white70,
-                        side: const BorderSide(color: Colors.white24),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  height: 54,
+                  child: OutlinedButton.icon(
+                    onPressed: _viewOnMap,
+                    icon: const Icon(Icons.map_outlined),
+                    label: const Text('เปิดดูในแผนที่', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.white70,
+                      side: const BorderSide(color: Colors.white24),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     ),
                   ),
-                ],
+                ),
               ],
             ),
           ),

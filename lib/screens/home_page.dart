@@ -293,7 +293,6 @@ class HomePage extends ConsumerWidget {
                               ? ResultCard(
                                   restaurant: searchState.restaurant!,
                                   userPosition: searchState.userPosition,
-                                  onReshuffle: () => ref.read(searchProvider.notifier).startSearch(ref.read(searchFilterProvider)),
                                 )
                               : InitialView(message: searchState.message),
                     ),

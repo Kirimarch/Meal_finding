@@ -12,7 +12,7 @@ class SearchFilterState {
 
   const SearchFilterState({
     this.category = 'restaurant',
-    this.radius = 1500.0,
+    this.radius = 1000.0,
     this.minRating = 0.0,
     this.openNow = false,
     this.useCustomLocation = false,

@@ -289,34 +289,33 @@ class FilterPanel extends ConsumerWidget {
 
               if (!filter.useCustomLocation) ...[
                 const SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('ระยะค้นหา',
-                        style: GoogleFonts.outfit(color: Colors.white38)),
-                    Text(
-                      '${(filter.radius / 1000).toStringAsFixed(1)} กม.',
-                      style: GoogleFonts.outfit(
-                          color: const Color(0xFFEB1555),
-                          fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-                SliderTheme(
-                  data: SliderTheme.of(context).copyWith(
-                    activeTrackColor: const Color(0xFFEB1555),
-                    inactiveTrackColor: Colors.white10,
-                    thumbColor: Colors.white,
-                    overlayColor: const Color(0xFFEB1555).withOpacity(0.2),
-                    trackHeight: 4,
-                  ),
-                  child: Slider(
-                    value: filter.radius,
-                    min: 500,
-                    max: 5000,
-                    divisions: 9,
-                    onChanged: notifier.setRadius,
-                  ),
+                Text('ระยะค้นหา',
+                    style: GoogleFonts.outfit(color: Colors.white38)),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 10,
+                  children: [1000.0, 5000.0, 10000.0, 20000.0].map((r) {
+                    final isSelected = filter.radius == r;
+                    final label = '${(r / 1000).toInt()} กม.';
+                    return ChoiceChip(
+                      label: Text(label),
+                      selected: isSelected,
+                      onSelected: (selected) {
+                        if (selected) notifier.setRadius(r);
+                      },
+                      labelStyle: GoogleFonts.outfit(
+                        color: isSelected ? Colors.white : Colors.white60,
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      ),
+                      selectedColor: const Color(0xFFEB1555),
+                      backgroundColor: Colors.white.withOpacity(0.05),
+                      checkmarkColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      side: BorderSide(
+                        color: isSelected ? const Color(0xFFEB1555) : Colors.white12,
+                      ),
+                    );
+                  }).toList(),
                 ),
               ] else ...[
                 const _LocationSelector(),
