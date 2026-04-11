@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/restaurant.dart';
 import '../services/places_service.dart';
+import '../services/cache_service.dart';
 import '../thai_coords.dart';
 import 'search_filter_provider.dart';
 
@@ -37,7 +38,21 @@ class SearchState {
 
 class SearchNotifier extends Notifier<SearchState> {
   @override
-  SearchState build() => const SearchState();
+  SearchState build() {
+    // โหลดข้อมูลจาก Cache
+    _loadFromCache();
+    return const SearchState();
+  }
+
+  Future<void> _loadFromCache() async {
+    final cached = await CacheService.getLastRestaurant();
+    if (cached != null) {
+      state = state.copyWith(
+        restaurant: cached,
+        message: 'ยินดีต้อนรับกลับ! นี่คือร้านล่าสุดที่คุณพบ',
+      );
+    }
+  }
 
   Future<void> startSearch(SearchFilterState filters) async {
     state = state.copyWith(
@@ -108,13 +123,17 @@ class SearchNotifier extends Notifier<SearchState> {
 
       await Future.delayed(const Duration(milliseconds: 1500));
 
+      if (restaurant != null) {
+        await CacheService.saveLastRestaurant(restaurant);
+      }
+
       state = SearchState(
         isScanning: false,
         restaurant: restaurant,
         userPosition: currentPos,
         message: restaurant == null
             ? 'ไม่พบร้านใหม่ๆ เลย ลองเพิ่มระยะดูไหม?'
-            : state.message,
+            : 'เจอแล้ว! ภารกิจสำเร็จ',
       );
     } catch (e) {
       state = SearchState(

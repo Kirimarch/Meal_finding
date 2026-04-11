@@ -1,3 +1,3 @@
-# lunch_quest
+# Meal Finder
 
 A new Flutter project.
