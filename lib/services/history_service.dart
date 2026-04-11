@@ -33,15 +33,27 @@ class HistoryService {
   static Future<List<Restaurant>> getHistory() async {
     final prefs = await SharedPreferences.getInstance();
     List<String> history = prefs.getStringList(_key) ?? [];
-    return history.map((e) => Restaurant.fromJson(e)).toList();
+    final List<Restaurant> result = [];
+    for (final e in history) {
+      try {
+        result.add(Restaurant.fromJson(e));
+      } catch (_) {
+        // skip entry ที่เสียหาย
+      }
+    }
+    return result;
   }
 
   static Future<void> removeFromHistory(String restaurantId) async {
     final prefs = await SharedPreferences.getInstance();
     List<String> history = prefs.getStringList(_key) ?? [];
     history.removeWhere((e) {
-      final r = Restaurant.fromJson(e);
-      return r.id == restaurantId;
+      try {
+        final r = Restaurant.fromJson(e);
+        return r.id == restaurantId;
+      } catch (_) {
+        return true; // ลบ entry ที่เสียหายออกด้วย
+      }
     });
     await prefs.setStringList(_key, history);
   }

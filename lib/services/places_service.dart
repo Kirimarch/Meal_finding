@@ -124,8 +124,6 @@ class PlacesService {
           'Content-Type': 'application/json',
           'X-Goog-Api-Key': _apiKey,
           'X-Goog-FieldMask': fieldMask,
-          'X-Android-Package': 'com.example.meal_finder',
-          'X-Android-Cert': 'F6:97:0A:69:BC:0F:19:CA:47:E5:33:FB:63:68:00:D0:35:87:C1:60',
         },
         body: jsonEncode(requestBody),
       );

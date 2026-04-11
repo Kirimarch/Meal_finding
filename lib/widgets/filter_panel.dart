@@ -266,122 +266,131 @@ class FilterPanel extends ConsumerWidget {
               ),
             ),
 
-            if (isExpanded) ...[
-              const SizedBox(height: 20),
-              const Divider(color: Colors.white10),
-              const SizedBox(height: 10),
+            AnimatedSize(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              child: isExpanded
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 20),
+                        const Divider(color: Colors.white10),
+                        const SizedBox(height: 10),
 
-              // Custom location toggle
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text('ตั้งค่าสถานที่เอง (จังหวัด/อำเภอ/ตำบล)',
-                        style: GoogleFonts.outfit(color: Colors.white70)),
-                  ),
-                  Switch(
-                    value: filter.useCustomLocation,
-                    activeColor: const Color(0xFFEB1555),
-                    onChanged: notifier.setUseCustomLocation,
-                  ),
-                ],
-              ),
+                        // Custom location toggle
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text('ตั้งค่าสถานที่เอง (จังหวัด/อำเภอ/ตำบล)',
+                                  style: GoogleFonts.outfit(color: Colors.white70)),
+                            ),
+                            Switch(
+                              value: filter.useCustomLocation,
+                              activeColor: const Color(0xFFEB1555),
+                              onChanged: notifier.setUseCustomLocation,
+                            ),
+                          ],
+                        ),
 
-              if (!filter.useCustomLocation) ...[
-                const SizedBox(height: 10),
-                Text('ระยะค้นหา',
-                    style: GoogleFonts.outfit(color: Colors.white38)),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 10,
-                  children: [1000.0, 5000.0, 10000.0, 20000.0].map((r) {
-                    final isSelected = filter.radius == r;
-                    final label = '${(r / 1000).toInt()} กม.';
-                    return ChoiceChip(
-                      label: Text(label),
-                      selected: isSelected,
-                      onSelected: (selected) {
-                        if (selected) notifier.setRadius(r);
-                      },
-                      labelStyle: GoogleFonts.outfit(
-                        color: isSelected ? Colors.white : Colors.white60,
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                      ),
-                      selectedColor: const Color(0xFFEB1555),
-                      backgroundColor: Colors.white.withOpacity(0.05),
-                      checkmarkColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      side: BorderSide(
-                        color: isSelected ? const Color(0xFFEB1555) : Colors.white12,
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ] else ...[
-                const _LocationSelector(),
-              ],
+                        if (!filter.useCustomLocation) ...[
+                          const SizedBox(height: 10),
+                          Text('ระยะค้นหา',
+                              style: GoogleFonts.outfit(color: Colors.white38)),
+                          const SizedBox(height: 12),
+                          Wrap(
+                            spacing: 10,
+                            children: [1000.0, 5000.0, 10000.0, 20000.0].map((r) {
+                              final isSelected = filter.radius == r;
+                              final label = '${(r / 1000).toInt()} กม.';
+                              return ChoiceChip(
+                                label: Text(label),
+                                selected: isSelected,
+                                onSelected: (selected) {
+                                  if (selected) notifier.setRadius(r);
+                                },
+                                labelStyle: GoogleFonts.outfit(
+                                  color: isSelected ? Colors.white : Colors.white60,
+                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                ),
+                                selectedColor: const Color(0xFFEB1555),
+                                backgroundColor: Colors.white.withOpacity(0.05),
+                                checkmarkColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                side: BorderSide(
+                                  color: isSelected ? const Color(0xFFEB1555) : Colors.white12,
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ] else ...[
+                          const _LocationSelector(),
+                        ],
 
-              const SizedBox(height: 16),
-              const Divider(color: Colors.white10),
-              const SizedBox(height: 16),
+                        const SizedBox(height: 16),
+                        const Divider(color: Colors.white10),
+                        const SizedBox(height: 16),
 
-              // Rating dropdown
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('ระดับความอร่อย',
-                      style: GoogleFonts.outfit(color: Colors.white38)),
-                  DropdownButton<double>(
-                    value: filter.minRating,
-                    dropdownColor: const Color(0xFF1A1A1A),
-                    style: GoogleFonts.outfit(
-                        color: Colors.white, fontWeight: FontWeight.w500),
-                    underline: const SizedBox(),
-                    icon:
-                        const Icon(Icons.star, color: Colors.amber, size: 16),
-                    items: const [
-                      DropdownMenuItem(
-                          value: 0.0, child: Text(' ไม่จำกัดดาว ')),
-                      DropdownMenuItem(
-                          value: 3.5, child: Text(' 3.5 ดาวขึ้นไป ')),
-                      DropdownMenuItem(
-                          value: 4.0, child: Text(' 4.0 ดาวขึ้นไป ')),
-                      DropdownMenuItem(
-                          value: 4.5, child: Text(' 4.5 ดาวขึ้นไป ')),
-                    ],
-                    onChanged: (val) {
-                      if (val != null) notifier.setMinRating(val);
-                    },
-                  ),
-                ],
-              ),
+                        // Rating dropdown
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('ระดับความอร่อย',
+                                style: GoogleFonts.outfit(color: Colors.white38)),
+                            DropdownButton<double>(
+                              value: filter.minRating,
+                              dropdownColor: const Color(0xFF1A1A1A),
+                              style: GoogleFonts.outfit(
+                                  color: Colors.white, fontWeight: FontWeight.w500),
+                              underline: const SizedBox(),
+                              icon:
+                                  const Icon(Icons.star, color: Colors.amber, size: 16),
+                              items: const [
+                                DropdownMenuItem(
+                                    value: 0.0, child: Text(' ไม่จำกัดดาว ')),
+                                DropdownMenuItem(
+                                    value: 3.5, child: Text(' 3.5 ดาวขึ้นไป ')),
+                                DropdownMenuItem(
+                                    value: 4.0, child: Text(' 4.0 ดาวขึ้นไป ')),
+                                DropdownMenuItem(
+                                    value: 4.5, child: Text(' 4.5 ดาวขึ้นไป ')),
+                              ],
+                              onChanged: (val) {
+                                if (val != null) notifier.setMinRating(val);
+                              },
+                            ),
+                          ],
+                        ),
 
-              // Open now switch
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('สถานะร้าน',
-                      style: GoogleFonts.outfit(color: Colors.white38)),
-                  Row(
-                    children: [
-                      Text(
-                        filter.openNow ? 'เปิดอยู่เท่านั้น' : 'เปิด/ปิด ก็ได้',
-                        style: GoogleFonts.outfit(
-                            color: filter.openNow
-                                ? Colors.greenAccent
-                                : Colors.white60),
-                      ),
-                      const SizedBox(width: 8),
-                      Switch(
-                        value: filter.openNow,
-                        activeColor: Colors.greenAccent,
-                        onChanged: notifier.setOpenNow,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ],
+                        // Open now switch
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('สถานะร้าน',
+                                style: GoogleFonts.outfit(color: Colors.white38)),
+                            Row(
+                              children: [
+                                Text(
+                                  filter.openNow ? 'เปิดอยู่เท่านั้น' : 'เปิด/ปิด ก็ได้',
+                                  style: GoogleFonts.outfit(
+                                      color: filter.openNow
+                                          ? Colors.greenAccent
+                                          : Colors.white60),
+                                ),
+                                const SizedBox(width: 8),
+                                Switch(
+                                  value: filter.openNow,
+                                  activeColor: Colors.greenAccent,
+                                  onChanged: notifier.setOpenNow,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
+                    )
+                  : const SizedBox.shrink(),
+            ),
           ],
         ),
       ),

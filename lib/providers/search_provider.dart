@@ -37,10 +37,14 @@ class SearchState {
 }
 
 class SearchNotifier extends Notifier<SearchState> {
+  bool _initialized = false;
+  Future<void>? _cacheLoadFuture;
+
   @override
   SearchState build() {
-    // โหลดข้อมูลจาก Cache
-    _loadFromCache();
+    // โหลดข้อมูลจาก Cache — เก็บ Future ไว้เพื่อให้ startSearch() await ได้
+    _initialized = false;
+    _cacheLoadFuture = _loadFromCache();
     return const SearchState();
   }
 
@@ -52,9 +56,15 @@ class SearchNotifier extends Notifier<SearchState> {
         message: 'ยินดีต้อนรับกลับ! นี่คือร้านล่าสุดที่คุณพบ',
       );
     }
+    _initialized = true;
   }
 
   Future<void> startSearch(SearchFilterState filters) async {
+    // รอให้ cache load เสร็จก่อน เพื่อป้องกัน race condition
+    if (!_initialized) {
+      await _cacheLoadFuture;
+    }
+
     state = state.copyWith(
       isScanning: true,
       clearRestaurant: true,
