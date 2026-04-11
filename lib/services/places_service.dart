@@ -29,7 +29,7 @@ class PlacesService {
       final String endpoint;
       final Map<String, dynamic> requestBody;
       const String fieldMask =
-          'places.displayName,places.rating,places.formattedAddress,places.googleMapsUri,places.photos,places.editorialSummary,places.priceLevel,places.name,places.currentOpeningHours,places.location';
+          'places.displayName,places.rating,places.formattedAddress,places.googleMapsUri,places.photos,places.editorialSummary,places.priceLevel,places.priceRange,places.name,places.currentOpeningHours,places.location';
       final category = (categories?.isNotEmpty == true)
           ? categories!.first
           : 'restaurant';

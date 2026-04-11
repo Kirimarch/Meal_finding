@@ -10,11 +10,7 @@ class ResultCard extends StatefulWidget {
   final Restaurant restaurant;
   final Position? userPosition;
 
-  const ResultCard({
-    super.key,
-    required this.restaurant,
-    this.userPosition,
-  });
+  const ResultCard({super.key, required this.restaurant, this.userPosition});
 
   @override
   State<ResultCard> createState() => _ResultCardState();
@@ -51,16 +47,22 @@ class _ResultCardState extends State<ResultCard> {
     setState(() {
       _isFavorite = !_isFavorite;
     });
-    
+
     if (mounted) {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(_isFavorite ? 'เพิ่มลงในรายการโปรดแล้ว! ❤️' : 'เอาออกจากรายการโปรดแล้ว'),
+          content: Text(
+            _isFavorite
+                ? 'เพิ่มลงในรายการโปรดแล้ว! ❤️'
+                : 'เอาออกจากรายการโปรดแล้ว',
+          ),
           duration: const Duration(seconds: 1),
           behavior: SnackBarBehavior.floating,
           backgroundColor: _isFavorite ? Colors.pinkAccent : Colors.grey[800],
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       );
     }
@@ -75,23 +77,28 @@ class _ResultCardState extends State<ResultCard> {
 
   Future<void> _launchNavigation() async {
     final restaurant = widget.restaurant;
-    
+
     // ถ้ามีพิกัด ให้ลองใช้ Directions API เพื่อนำทางทันที
     if (restaurant.lat != null && restaurant.lng != null) {
       final lat = restaurant.lat;
       final lng = restaurant.lng;
-      
+
       // ลองใช้ Google Navigation Intent (สำหรับ Android)
       final googleMapsIntentUri = Uri.parse('google.navigation:q=$lat,$lng');
       // แผนสำรอง: ใช้ Google Maps Directions URL
-      final googleMapsWebUri = Uri.parse('https://www.google.com/maps/dir/?api=1&destination=$lat,$lng');
+      final googleMapsWebUri = Uri.parse(
+        'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng',
+      );
 
       try {
         if (await canLaunchUrl(googleMapsIntentUri)) {
           await launchUrl(googleMapsIntentUri);
           return;
         } else if (await canLaunchUrl(googleMapsWebUri)) {
-          await launchUrl(googleMapsWebUri, mode: LaunchMode.externalApplication);
+          await launchUrl(
+            googleMapsWebUri,
+            mode: LaunchMode.externalApplication,
+          );
           return;
         }
       } catch (e) {
@@ -107,7 +114,9 @@ class _ResultCardState extends State<ResultCard> {
   }
 
   String get _distanceStr {
-    if (widget.userPosition == null || widget.restaurant.lat == null || widget.restaurant.lng == null) {
+    if (widget.userPosition == null ||
+        widget.restaurant.lat == null ||
+        widget.restaurant.lng == null) {
       return '';
     }
     final distanceInMeters = Geolocator.distanceBetween(
@@ -127,7 +136,7 @@ class _ResultCardState extends State<ResultCard> {
   Widget build(BuildContext context) {
     final restaurant = widget.restaurant;
     final dist = _distanceStr;
-    
+
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -138,7 +147,7 @@ class _ResultCardState extends State<ResultCard> {
             color: Colors.black.withOpacity(0.4),
             blurRadius: 20,
             offset: const Offset(0, 10),
-          )
+          ),
         ],
       ),
       clipBehavior: Clip.antiAlias,
@@ -159,17 +168,27 @@ class _ResultCardState extends State<ResultCard> {
                           if (loadingProgress == null) return child;
                           return Container(
                             color: Colors.grey[900],
-                            child: const Center(child: CircularProgressIndicator()),
+                            child: const Center(
+                              child: CircularProgressIndicator(),
+                            ),
                           );
                         },
                         errorBuilder: (context, error, stackTrace) => Container(
                           color: Colors.grey[900],
-                          child: const Icon(Icons.image_not_supported, size: 50, color: Colors.white24),
+                          child: const Icon(
+                            Icons.image_not_supported,
+                            size: 50,
+                            color: Colors.white24,
+                          ),
                         ),
                       )
                     : Container(
                         color: Colors.grey[900],
-                        child: const Icon(Icons.restaurant, size: 50, color: Colors.white24),
+                        child: const Icon(
+                          Icons.restaurant,
+                          size: 50,
+                          color: Colors.white24,
+                        ),
                       ),
               ),
               // Gradient Overlay บนรูป
@@ -179,10 +198,7 @@ class _ResultCardState extends State<ResultCard> {
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withOpacity(0.7),
-                    ],
+                    colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
                   ),
                 ),
               ),
@@ -206,23 +222,6 @@ class _ResultCardState extends State<ResultCard> {
                   ),
                 ),
               ),
-              // ป้ายราคา
-              if (restaurant.priceLevel != null)
-                Positioned(
-                  top: 15,
-                  right: 15,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.amber,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      restaurant.priceLevel!,
-                      style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ),
             ],
           ),
 
@@ -251,18 +250,28 @@ class _ResultCardState extends State<ResultCard> {
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.green.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.star, color: Colors.green, size: 16),
+                              const Icon(
+                                Icons.star,
+                                color: Colors.green,
+                                size: 16,
+                              ),
                               const SizedBox(width: 4),
                               Text(
                                 '${restaurant.rating}',
-                                style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+                                style: const TextStyle(
+                                  color: Colors.green,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ],
                           ),
@@ -271,13 +280,32 @@ class _ResultCardState extends State<ResultCard> {
                           const SizedBox(height: 6),
                           Row(
                             children: [
-                              Icon(Icons.location_on, color: Colors.white.withOpacity(0.5), size: 14),
+                              Icon(
+                                Icons.location_on,
+                                color: Colors.white.withOpacity(0.5),
+                                size: 14,
+                              ),
                               const SizedBox(width: 2),
                               Text(
                                 dist,
-                                style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 13, fontWeight: FontWeight.w500),
+                                style: TextStyle(
+                                  color: Colors.white.withOpacity(0.5),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                             ],
+                          ),
+                        ],
+                        if (restaurant.priceLevel != null) ...[
+                          const SizedBox(height: 6),
+                          Text(
+                            'ราคา: ${restaurant.priceLevel}',
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.6),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ],
                       ],
@@ -285,7 +313,7 @@ class _ResultCardState extends State<ResultCard> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                
+
                 // คำบรรยายร้าน
                 if (restaurant.summary != null)
                   Padding(
@@ -316,12 +344,20 @@ class _ResultCardState extends State<ResultCard> {
                   child: ElevatedButton.icon(
                     onPressed: _launchNavigation,
                     icon: const Icon(Icons.near_me),
-                    label: const Text('นำทางไปชิมเลย!', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    label: const Text(
+                      'นำทางไปชิมเลย!',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFEB1555),
                       foregroundColor: Colors.white,
                       elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
                   ),
                 ),
@@ -332,11 +368,19 @@ class _ResultCardState extends State<ResultCard> {
                   child: OutlinedButton.icon(
                     onPressed: _viewOnMap,
                     icon: const Icon(Icons.map_outlined),
-                    label: const Text('เปิดดูในแผนที่', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    label: const Text(
+                      'เปิดดูในแผนที่',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.white70,
                       side: const BorderSide(color: Colors.white24),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
                   ),
                 ),
