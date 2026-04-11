@@ -17,8 +17,8 @@ class _ScanningViewState extends State<ScanningView>
     super.initState();
     _pulseController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1200),
-    )..repeat(reverse: true);
+      duration: const Duration(milliseconds: 2000), // Longer duration for smoother ripple
+    )..repeat();
   }
 
   @override
@@ -33,34 +33,66 @@ class _ScanningViewState extends State<ScanningView>
       key: const ValueKey('scanning'),
       children: [
         const SizedBox(height: 60),
-        ScaleTransition(
-          scale: Tween<double>(begin: 1.0, end: 1.2).animate(_pulseController),
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Container(
-                width: 150,
-                height: 150,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: const Color(0xFFEB1555).withOpacity(0.3),
-                    width: 1,
+        SizedBox(
+          width: 250,
+          height: 250,
+          child: AnimatedBuilder(
+            animation: _pulseController,
+            builder: (context, child) {
+              return Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Ripples
+                  ...List.generate(3, (index) {
+                    final delay = index * 0.33;
+                    final progress = (_pulseController.value - delay) % 1.0;
+                    final opacity = (1.0 - progress).clamp(0.0, 1.0);
+                    final size = 100 + (progress * 150);
+
+                    return Container(
+                      width: size,
+                      height: size,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: const Color(0xFFEB1555).withOpacity(opacity * 0.5),
+                          width: 2,
+                        ),
+                      ),
+                    );
+                  }),
+                  
+                  // Central Glow
+                  Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: const Color(0xFFEB1555).withOpacity(0.1),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFEB1555).withOpacity(0.3),
+                          blurRadius: 20,
+                          spreadRadius: 5,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ),
-              Container(
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: const Color(0xFFEB1555).withOpacity(0.1),
-                  border: Border.all(color: const Color(0xFFEB1555), width: 2),
-                ),
-                child: const Icon(Icons.radar_rounded,
-                    size: 50, color: Color(0xFFEB1555)),
-              ),
-            ],
+
+                  // Static/Subtle Pulse Core
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: const Color(0xFFEB1555), width: 2),
+                    ),
+                    child: const Icon(Icons.radar_rounded,
+                        size: 40, color: Color(0xFFEB1555)),
+                  ),
+                ],
+              );
+            },
           ),
         ),
         const SizedBox(height: 40),
