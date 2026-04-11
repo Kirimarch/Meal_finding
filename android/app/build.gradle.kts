@@ -5,6 +5,13 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+val envFile = project.file("../../.env")
+val env = java.util.Properties()
+if (envFile.exists()) {
+    envFile.inputStream().use { env.load(it) }
+}
+val googleMapsApiKey = env.getProperty("GOOGLE_PLACES_API_KEY") ?: ""
+
 android {
     namespace = "com.example.meal_finder"
     compileSdk = 36
@@ -28,6 +35,8 @@ android {
         targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        manifestPlaceholders["MAPS_API_KEY"] = googleMapsApiKey
     }
 
     buildTypes {

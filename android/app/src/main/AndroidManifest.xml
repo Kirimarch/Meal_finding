@@ -37,7 +37,7 @@
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <!-- Add your Google Maps API Key here -->
         <meta-data android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyA5yUYeJECqiTphypbFaicKUbDXCyoiHO4"/>
+            android:value="${MAPS_API_KEY}"/>
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
